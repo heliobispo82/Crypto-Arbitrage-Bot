@@ -19,6 +19,15 @@ API_KEYS = {
         "apiKey": os.environ["KUCOIN_API_KEY"],
         "secret": os.environ["KUCOIN_SECRET_KEY"],
         "password": os.environ["KUCOIN_PASSPHRASE"]
+    },
+      "gateio": {
+        "apiKey": os.environ["GATEIO_API_KEY"],
+        "secret": os.environ["GATEIO_SECRET_KEY"]
+    },
+    "bitget": {
+        "apiKey": os.environ["BITGET_API_KEY"],
+        "secret": os.environ["BITGET_SECRET_KEY"],
+        "password": os.environ["BITGET_PASSPHRASE"]
     }
 }
 
@@ -41,7 +50,12 @@ def send_telegram_message(message):
 
 # Initialize exchanges
 desired_symbols = ['TRX/USDT', 'XRP/USDT', 'DOGE/USDT', 'ADA/USDT']
-TRADING_FEES = {'binance': 0.1, 'kucoin': 0.1}  # in percent
+TRADING_FEES = {
+    'binance': 0.1, 
+    'kucoin': 0.1,
+    'gateio': 0.2,
+    'bitget': 0.1
+    }  # in percent
 profit_threshold = 0.5
 exchanges = {}
 
@@ -77,9 +91,23 @@ def calculate_profit(buy_price, sell_price, buy_ex, sell_ex):
     effective_sell = sell_price * (1 - sell_fee)
     return ((effective_sell - effective_buy) / effective_buy) * 100
 
+    import os
+
+LOG_FILE = "arb_bot.log"
+
+def check_log_size(max_size_mb=5):
+    if os.path.exists(LOG_FILE):
+        size_mb = os.path.getsize(LOG_FILE) / (1024 * 1024)
+        if size_mb > max_size_mb:
+            with open(LOG_FILE, "w") as f:
+                f.write("")  # Limpa o conteúdo
+            log_info("Arquivo de log estava grande e foi limpo.")
+
 # Main loop
 while True:
+    
     try:
+        check_log_size()
         prices = get_prices()
         log_info(prices)
 
@@ -111,7 +139,7 @@ while True:
     except Exception as e:
         log_error(f"Fatal error: {e}")
 
-    time.sleep(5)
+    time.sleep(60)
 
     #  cd Crypto-Arbitrage-Bot
 
